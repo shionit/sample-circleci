@@ -1,0 +1,52 @@
+version: 2
+
+references:
+  ## Cache
+  cache_key: &cache_key
+    key: cache-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}
+  restore_cache: &restore_cache
+    restore_cache:
+      <<: *cache_key
+  save_cache: &save_cache
+    save_cache:
+      <<: *cache_key
+      paths:
+        - ~/.gradle
+        - ~/.m2
+
+  ## Workspace
+  workspace: &workspace
+    ~/workspace
+
+  ## Docker image configurations
+  docker_config: &docker_config
+    working_directory: *workspace
+    docker:
+      - image: circleci/openjdk:8-jdk-node-browsers
+    environment:
+      TERM: dumb
+
+jobs:
+  build:
+    <<: *docker_config
+    steps:
+    - checkout
+    - *restore_cache
+    - run: ./gradlew dependencies
+    - *save_cache
+    # Build Docs
+    - run:
+        name: Gradle build (Documents)
+        command: ./gradlew javadoc
+    - store_artifacts:
+        path: build/docs/
+
+    # Run unit tests
+    - run:
+        name: Run unit tests
+        command: ./gradlew check
+    - store_test_results:
+        path: build/test-results
+    - store_artifacts:
+        path: build/reports/
+
