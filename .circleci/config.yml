@@ -22,8 +22,9 @@ references:
   docker_config: &docker_config
     working_directory: *workspace
     docker:
-      - image: circleci/openjdk:8-jdk-node-browsers
+      - image: amazoncorretto:8
     environment:
+      JAVA_HOME: /usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64
       TERM: dumb
 
 jobs:
